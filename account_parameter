@@ -1,0 +1,2 @@
+- {group: group1, passwd: passwd1, user: check1}
+- {group: group2, passwd: passwd2, user: check2}

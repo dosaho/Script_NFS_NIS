@@ -1,0 +1,527 @@
+network:
+  ip:
+  - {address: !!python/unicode '', is_auto_assign: true, name: !!python/unicode 'public1'}
+  subnet:
+  - {mask: !!python/unicode '192.168.1.0/24', name: !!python/unicode 'subnet1', network_class: !!python/unicode 'C'}
+project_name: d5d9f8a4-ad77-4266-be51-1ae10479774c
+user_name: vcs_service
+vmset:
+- architecture: !!python/unicode 'x86_64'
+  ip: !!python/unicode 'public1'
+  memory: 16000
+  name: !!python/unicode 'front-end'
+  number: 1
+  os: !!python/unicode 'centos'
+  script:
+  - {once_script: !!python/unicode '
+
+      #!/bin/bash
+
+
+      SCRIPT=`readlink -f "$0"`
+
+      SCRIPTPATH=`dirname "$SCRIPT"`
+
+      FILENAME=`basename "$SCRIPT"`
+
+      FILENAME="${FILENAME%.*}"
+
+
+      config="$SCRIPTPATH/${FILENAME}_parameter"
+
+      echo $config
+
+      yum install python-setuptools -y
+
+      easy_install PyYAML
+
+
+      wget http://140.114.91.71:8080/account.py -O /tmp/account.py
+
+      python /tmp/account.py $config
+
+      ', parameter: '- {group: !!python/unicode ''ta'', passwd: !!python/unicode ''pp2013ta_1'',
+      user: !!python/unicode ''ta_1''}
+
+      - {group: !!python/unicode ''ta'', passwd: !!python/unicode ''pp2013ta_2'',
+      user: !!python/unicode ''ta_2''}
+
+      - {group: !!python/unicode ''ta'', passwd: !!python/unicode ''pp2013ta_3'',
+      user: !!python/unicode ''ta_3''}
+
+      - {group: !!python/unicode ''ta'', passwd: !!python/unicode ''pp2013ta_4'',
+      user: !!python/unicode ''ta_4''}
+
+      - {group: !!python/unicode ''ta'', passwd: !!python/unicode ''pp2013ta_5'',
+      user: !!python/unicode ''ta_5''}
+
+      - {group: !!python/unicode ''student'', passwd: !!python/unicode ''bJ9X(*ynsChd9'',
+      user: !!python/unicode ''student_0''}
+
+      - {group: !!python/unicode ''student'', passwd: !!python/unicode ''C&^8^0u4Aukm5'',
+      user: !!python/unicode ''student_1''}
+
+      - {group: !!python/unicode ''student'', passwd: !!python/unicode ''dVL0Coa)ef*9Q'',
+      user: !!python/unicode ''student_2''}
+
+      - {group: !!python/unicode ''student'', passwd: !!python/unicode ''nX1VY#1iUpMI*'',
+      user: !!python/unicode ''student_3''}
+
+      - {group: !!python/unicode ''student'', passwd: !!python/unicode ''P*dePw$5BfEPO'',
+      user: !!python/unicode ''student_4''}
+
+      - {group: !!python/unicode ''student'', passwd: !!python/unicode ''2G#6Y%wX(S39C'',
+      user: !!python/unicode ''student_5''}
+
+      - {group: !!python/unicode ''student'', passwd: !!python/unicode ''@KW@MLH67T*&l'',
+      user: !!python/unicode ''student_6''}
+
+      - {group: !!python/unicode ''student'', passwd: !!python/unicode ''SCOExmC2z%XWK'',
+      user: !!python/unicode ''student_7''}
+
+      - {group: !!python/unicode ''student'', passwd: !!python/unicode ''P^CW2)nK*dR)G'',
+      user: !!python/unicode ''student_8''}
+
+      - {group: !!python/unicode ''student'', passwd: !!python/unicode ''H@1Ub1Q#9Z&M*'',
+      user: !!python/unicode ''student_9''}
+
+      ', program: !!python/unicode 'account_installer'}
+  - {once_script: !!python/unicode '
+
+      #!/bin/bash
+
+      SCRIPT=`readlink -f "$0"`
+
+      SCRIPTPATH=`dirname "$SCRIPT"`
+
+      FILENAME=`basename "$SCRIPT"`
+
+      FILENAME="${FILENAME%.*}"
+
+
+      source $SCRIPTPATH/${FILENAME}_parameter
+
+
+      echo $network_domain
+
+      yum install ypserv -y
+
+      echo "NISDOMAIN=VCS" >> /etc/sysconfig/network
+
+      echo ''#Host                     : Domain  : Map              : Security'' >>
+      /etc/ypserv.conf
+
+      echo ''127.0.0.0/255.0.0.0       : *       : *                : None'' >> /etc/ypserv.conf
+
+      echo "$network_domain   : *       : *                : none" >> /etc/ypserv.conf
+
+      echo ''*                         : *       : *                : deny'' >> /etc/ypserv.conf
+
+      service ypserv start
+
+      echo ''^D Y'' | /usr/lib64/yp/ypinit -m
+
+      chkconfig --level 35 ypserv on
+
+      chkconfig --level 35 yppasswdd on
+
+      service ypserv restart
+
+      service yppasswdd start
+
+
+      echo ''StrictModes no'' >> /etc/ssh/sshd_config
+
+      /etc/init.d/sshd restart
+
+      ', parameter: !!python/unicode 'network_domain=192.168.1.0/24', program: !!python/unicode 'nis'}
+  - {once_script: !!python/unicode '
+
+      #!/bin/bash
+
+
+      SCRIPT=`readlink -f "$0"`
+
+      SCRIPTPATH=`dirname "$SCRIPT"`
+
+      FILENAME=`basename "$SCRIPT"`
+
+      FILENAME="${FILENAME%.*}"
+
+
+      source $SCRIPTPATH/${FILENAME}_parameter
+
+
+      echo $network_domain
+
+      echo $mount_path
+
+
+      echo ''''  > /etc/sysconfig/iptables
+
+      echo ''*filter'' >> /etc/sysconfig/iptables
+
+      echo '':INPUT ACCEPT [0:0]'' >> /etc/sysconfig/iptables
+
+      echo '':FORWARD ACCEPT [0:0]'' >> /etc/sysconfig/iptables
+
+      echo '':OUTPUT ACCEPT [0:0]'' >> /etc/sysconfig/iptables
+
+      echo ''-A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT'' >> /etc/sysconfig/iptables
+
+      echo ''-A INPUT -p icmp -j ACCEPT'' >> /etc/sysconfig/iptables
+
+      echo ''-A INPUT -i lo -j ACCEPT'' >> /etc/sysconfig/iptables
+
+      echo ''-A INPUT -m state --state NEW -m tcp -p tcp --dport 22 -j ACCEPT'' >>
+      /etc/sysconfig/iptables
+
+      echo ''-A INPUT -m state --state NEW -m tcp -p tcp --dport 111 -j ACCEPT'' >>
+      /etc/sysconfig/iptables
+
+      echo ''-A INPUT -m state --state NEW -m tcp -p tcp --dport 2049 -j ACCEPT''  >>
+      /etc/sysconfig/iptables
+
+      echo ''-A INPUT -m state --state NEW -m tcp -p tcp --dport 50001:50004 -j ACCEPT''
+      >> /etc/sysconfig/iptables
+
+      echo ''-A INPUT -m state --state NEW -m udp -p udp --dport 111 -j ACCEPT''  >>
+      /etc/sysconfig/iptables
+
+      echo ''-A INPUT -m state --state NEW -m udp -p udp --dport 2049 -j ACCEPT''  >>
+      /etc/sysconfig/iptables
+
+      echo ''-A INPUT -m state --state NEW -m udp -p udp --dport 50001:50004 -j ACCEPT''  >>
+      /etc/sysconfig/iptables
+
+      echo ''-A INPUT -j REJECT --reject-with icmp-host-prohibited''
+
+      echo ''-A FORWARD -j REJECT --reject-with icmp-host-prohibited''
+
+      echo ''COMMIT''  >> /etc/sysconfig/iptables
+
+      service iptables restart
+
+      yum install rpcbind nfs-utils nfs-utils-lib -y
+
+      echo "${mount_path[0]} $network_domain(rw,no_root_squash,async)" >> /etc/exports
+
+      echo "${mount_path[1]} $network_domain(rw,no_root_squash,async)" >> /etc/exports
+
+      chkconfig --level 3 netfs off
+
+      chkconfig --level 35 nfs on
+
+      service netfs stop
+
+      service nfs start
+
+      ', parameter: !!python/unicode 'mount_path=(/opt /home)
+
+      network_domain=192.168.1.0/24', program: !!python/unicode 'nfs'}
+  - {once_script: !!python/unicode '
+
+      #!/bin/bash
+
+
+      yum install openmpi -y
+
+      ', parameter: !!python/unicode '', program: !!python/unicode 'openmpi'}
+  - {once_script: !!python/unicode '#
+
+      #!/bin/bash
+
+
+      SCRIPT=`readlink -f "$0"`
+
+      SCRIPTPATH=`dirname "$SCRIPT"`
+
+      FILENAME=`basename "$SCRIPT"`
+
+      FILENAME="${FILENAME%.*}"
+
+
+      source $SCRIPTPATH/${FILENAME}_parameter
+
+      base_dir=/etc/sscloud/default_script
+
+      wget http://140.114.91.71:8080/ip_mapper_client.py -O $base_dir/ip_mapper_client.py
+
+      yum install python-setuptools -y
+
+      easy_install PyYAML
+
+      easy_install pika==0.9.8
+
+
+      python $base_dir/ip_mapper_client.py $ip_mapper_server_address $ip_mapper_server_port
+      $virtual_cluster_uuid $vmset_uuid $is_master >> /root/rabbitmq.log &
+
+
+      echo "python $base_dir/ip_mapper_client.py $ip_mapper_server_address $ip_mapper_server_port
+      $virtual_cluster_uuid $vmset_uuid $is_master >> /root/rabbitmq.log &" >> /etc/rc.local
+
+      ', parameter: !!python/unicode 'virtual_cluster_uuid=d5d9f8a4-ad77-4266-be51-1ae10479774c
+
+      vmset_uuid=ab3aad0f-43da-4620-a661-29e70836b1d4
+
+      ip_mapper_server_address=140.114.91.35
+
+      ip_mapper_server_port=5672
+
+      is_master=1', program: !!python/unicode 'hostname_mapper'}
+  subnet: !!python/unicode 'subnet1'
+  vcpu: 16
+  version: !!python/unicode '6.3'
+- architecture: !!python/unicode 'x86_64'
+  memory: 16000
+  name: !!python/unicode 'multi-core'
+  number: 3
+  os: !!python/unicode 'centos'
+  script:
+  - {once_script: !!python/unicode '
+
+      #!/bin/bash
+
+      SCRIPT=`readlink -f "$0"`
+
+      SCRIPTPATH=`dirname "$SCRIPT"`
+
+      FILENAME=`basename "$SCRIPT"`
+
+      FILENAME="${FILENAME%.*}"
+
+
+      source $SCRIPTPATH/${FILENAME}_parameter
+
+      yum install ypbind
+
+      echo "NISDOMAIN=VCS" >> /etc/sysconfig/network
+
+      sed -i ''s/passwd:\     files/passwd:\     files\ nis/g'' /etc/nsswitch.conf
+
+      sed -i ''s/shadow:\     files/shadow:\     files\ nis/g'' /etc/nsswitch.conf
+
+      sed -i ''s/group:\      files/group:\     files\ nis/g'' /etc/nsswitch.conf
+
+      sed -i ''s/hosts:\      files/hosts:\     files\ nis/g'' /etc/nsswitch.conf
+
+      sed -i ''s/USENIS=no/USENIS=yes/g'' /etc/sysconfig/authconfig
+
+      sed -i ''s/use_authtok/use_authtok\ nis/g'' /etc/pam.d/system-auth
+
+      echo "domain VCS server $master_name" >> /etc/yp.conf
+
+      chkconfig --level 35 ypbind on
+
+      service ypbind start
+
+      echo ''StrictModes no'' >> /etc/ssh/sshd_config
+
+      /etc/init.d/sshd restart
+
+      ', parameter: !!python/unicode 'master_name=front_end', program: !!python/unicode 'nis'}
+  - {once_script: !!python/unicode '
+
+      #!/bin/bash
+
+
+      SCRIPT=`readlink -f "$0"`
+
+      SCRIPTPATH=`dirname "$SCRIPT"`
+
+      FILENAME=`basename "$SCRIPT"`
+
+      FILENAME="${FILENAME%.*}"
+
+
+      source $SCRIPTPATH/${FILENAME}_parameter
+
+
+      yum install rpcbind nfs-utils nfs-utils-lib -y
+
+      echo "$master_name:${mount_path[0]}  ${mount_path[0]}  nfs  defaults  0  0"
+      >> /etc/fstab
+
+      echo "$master_name:${mount_path[1]}  ${mount_path[1]}  nfs  defaults  0  0"
+      >> /etc/fstab
+
+      mount -t nfs "$master_name":${mount_path[0]} ${mount_path[0]}
+
+      mount -t nfs "$master_name":${mount_path[1]} ${mount_path[1]}
+
+      ', parameter: !!python/unicode 'mount_path=(/opt /home)
+
+      master_name=front_end', program: !!python/unicode 'nfs'}
+  - {once_script: !!python/unicode '#
+
+      #!/bin/bash
+
+
+      SCRIPT=`readlink -f "$0"`
+
+      SCRIPTPATH=`dirname "$SCRIPT"`
+
+      FILENAME=`basename "$SCRIPT"`
+
+      FILENAME="${FILENAME%.*}"
+
+
+      source $SCRIPTPATH/${FILENAME}_parameter
+
+      base_dir=/etc/sscloud/default_script
+
+      wget http://140.114.91.71:8080/ip_mapper_client.py -O $base_dir/ip_mapper_client.py
+
+      yum install python-setuptools -y
+
+      easy_install PyYAML
+
+      easy_install pika==0.9.8
+
+
+      python $base_dir/ip_mapper_client.py $ip_mapper_server_address $ip_mapper_server_port
+      $virtual_cluster_uuid $vmset_uuid $is_master >> /root/rabbitmq.log &
+
+
+      echo "python $base_dir/ip_mapper_client.py $ip_mapper_server_address $ip_mapper_server_port
+      $virtual_cluster_uuid $vmset_uuid $is_master >> /root/rabbitmq.log &" >> /etc/rc.local
+
+      ', parameter: !!python/unicode 'virtual_cluster_uuid=d5d9f8a4-ad77-4266-be51-1ae10479774c
+
+      vmset_uuid=533a939b-7d48-4d7e-8637-b22b168d88e3
+
+      ip_mapper_server_address=140.114.91.35
+
+      ip_mapper_server_port=5672
+
+      is_master=0', program: !!python/unicode 'hostname_mapper'}
+  subnet: !!python/unicode 'subnet1'
+  vcpu: 16
+  version: !!python/unicode '6.3'
+- architecture: !!python/unicode 'x86_64'
+  memory: 1000
+  name: !!python/unicode 'single-core'
+  number: 2
+  os: !!python/unicode 'centos'
+  script:
+  - {once_script: !!python/unicode '
+
+      #!/bin/bash
+
+      SCRIPT=`readlink -f "$0"`
+
+      SCRIPTPATH=`dirname "$SCRIPT"`
+
+      FILENAME=`basename "$SCRIPT"`
+
+      FILENAME="${FILENAME%.*}"
+
+
+      source $SCRIPTPATH/${FILENAME}_parameter
+
+      yum install ypbind
+
+      echo "NISDOMAIN=VCS" >> /etc/sysconfig/network
+
+      sed -i ''s/passwd:\     files/passwd:\     files\ nis/g'' /etc/nsswitch.conf
+
+      sed -i ''s/shadow:\     files/shadow:\     files\ nis/g'' /etc/nsswitch.conf
+
+      sed -i ''s/group:\      files/group:\     files\ nis/g'' /etc/nsswitch.conf
+
+      sed -i ''s/hosts:\      files/hosts:\     files\ nis/g'' /etc/nsswitch.conf
+
+      sed -i ''s/USENIS=no/USENIS=yes/g'' /etc/sysconfig/authconfig
+
+      sed -i ''s/use_authtok/use_authtok\ nis/g'' /etc/pam.d/system-auth
+
+      echo "domain VCS server $master_name" >> /etc/yp.conf
+
+      chkconfig --level 35 ypbind on
+
+      service ypbind start
+
+      echo ''StrictModes no'' >> /etc/ssh/sshd_config
+
+      /etc/init.d/sshd restart
+
+      ', parameter: !!python/unicode 'master_name=front_end', program: !!python/unicode 'nis'}
+  - {once_script: !!python/unicode '
+
+      #!/bin/bash
+
+
+      SCRIPT=`readlink -f "$0"`
+
+      SCRIPTPATH=`dirname "$SCRIPT"`
+
+      FILENAME=`basename "$SCRIPT"`
+
+      FILENAME="${FILENAME%.*}"
+
+
+      source $SCRIPTPATH/${FILENAME}_parameter
+
+
+      yum install rpcbind nfs-utils nfs-utils-lib -y
+
+      echo "$master_name:${mount_path[0]}  ${mount_path[0]}  nfs  defaults  0  0"
+      >> /etc/fstab
+
+      echo "$master_name:${mount_path[1]}  ${mount_path[1]}  nfs  defaults  0  0"
+      >> /etc/fstab
+
+      mount -t nfs "$master_name":${mount_path[0]} ${mount_path[0]}
+
+      mount -t nfs "$master_name":${mount_path[1]} ${mount_path[1]}
+
+      ', parameter: !!python/unicode 'mount_path=(/opt /home)
+
+      master_name=front_end', program: !!python/unicode 'nfs'}
+  - {once_script: !!python/unicode '#
+
+      #!/bin/bash
+
+
+      SCRIPT=`readlink -f "$0"`
+
+      SCRIPTPATH=`dirname "$SCRIPT"`
+
+      FILENAME=`basename "$SCRIPT"`
+
+      FILENAME="${FILENAME%.*}"
+
+
+      source $SCRIPTPATH/${FILENAME}_parameter
+
+      base_dir=/etc/sscloud/default_script
+
+      wget http://140.114.91.71:8080/ip_mapper_client.py -O $base_dir/ip_mapper_client.py
+
+      yum install python-setuptools -y
+
+      easy_install PyYAML
+
+      easy_install pika==0.9.8
+
+
+      python $base_dir/ip_mapper_client.py $ip_mapper_server_address $ip_mapper_server_port
+      $virtual_cluster_uuid $vmset_uuid $is_master >> /root/rabbitmq.log &
+
+
+      echo "python $base_dir/ip_mapper_client.py $ip_mapper_server_address $ip_mapper_server_port
+      $virtual_cluster_uuid $vmset_uuid $is_master >> /root/rabbitmq.log &" >> /etc/rc.local
+
+      ', parameter: !!python/unicode 'virtual_cluster_uuid=d5d9f8a4-ad77-4266-be51-1ae10479774c
+
+      vmset_uuid=39dafaea-9a45-455c-863b-0a92fb9521f7
+
+      ip_mapper_server_address=140.114.91.35
+
+      ip_mapper_server_port=5672
+
+      is_master=0', program: !!python/unicode 'hostname_mapper'}
+  subnet: !!python/unicode 'subnet1'
+  vcpu: 1
+  version: !!python/unicode '6.3'

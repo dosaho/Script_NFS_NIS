@@ -1,0 +1,260 @@
+- {once_script: !!python/unicode '
+
+    #!/bin/bash
+
+
+    SCRIPT=`readlink -f "$0"`
+
+    SCRIPTPATH=`dirname "$SCRIPT"`
+
+    FILENAME=`basename "$SCRIPT"`
+
+    FILENAME="${FILENAME%.*}"
+
+
+    config="$SCRIPTPATH/${FILENAME}_parameter"
+
+    echo $config
+
+    yum install python-setuptools -y
+
+    easy_install PyYAML
+
+
+    wget http://140.114.91.71:8080/account.py -O /tmp/account.py
+
+    python /tmp/account.py $config
+
+    ', parameter: '- {group: !!python/unicode ''ta'', passwd: !!python/unicode ''pp2013ta_1'',
+    user: !!python/unicode ''ta_1''}
+
+    - {group: !!python/unicode ''ta'', passwd: !!python/unicode ''pp2013ta_2'', user:
+    !!python/unicode ''ta_2''}
+
+    - {group: !!python/unicode ''ta'', passwd: !!python/unicode ''pp2013ta_3'', user:
+    !!python/unicode ''ta_3''}
+
+    - {group: !!python/unicode ''ta'', passwd: !!python/unicode ''pp2013ta_4'', user:
+    !!python/unicode ''ta_4''}
+
+    - {group: !!python/unicode ''ta'', passwd: !!python/unicode ''pp2013ta_5'', user:
+    !!python/unicode ''ta_5''}
+
+    - {group: !!python/unicode ''student'', passwd: !!python/unicode ''Wi)!e0j3Urc09'',
+    user: !!python/unicode ''student_00''}
+
+    - {group: !!python/unicode ''student'', passwd: !!python/unicode ''gW2ZB$Zm0g@4x'',
+    user: !!python/unicode ''student_01''}
+
+    - {group: !!python/unicode ''student'', passwd: !!python/unicode ''KCcfWPKMzQiMu'',
+    user: !!python/unicode ''student_02''}
+
+    - {group: !!python/unicode ''student'', passwd: !!python/unicode ''Z)9o%5xQq%GO^'',
+    user: !!python/unicode ''student_03''}
+
+    - {group: !!python/unicode ''student'', passwd: !!python/unicode ''@4#oo2s7T@*8#'',
+    user: !!python/unicode ''student_04''}
+
+    - {group: !!python/unicode ''student'', passwd: !!python/unicode ''f%nDNf^pmjS0M'',
+    user: !!python/unicode ''student_05''}
+
+    - {group: !!python/unicode ''student'', passwd: !!python/unicode ''4sqixjIwAFsxB'',
+    user: !!python/unicode ''student_06''}
+
+    - {group: !!python/unicode ''student'', passwd: !!python/unicode ''QKD%MCw65ri3H'',
+    user: !!python/unicode ''student_07''}
+
+    - {group: !!python/unicode ''student'', passwd: !!python/unicode ''^^E%@XXj5fGLM'',
+    user: !!python/unicode ''student_08''}
+
+    - {group: !!python/unicode ''student'', passwd: !!python/unicode ''yEZFUlUw7s6Wo'',
+    user: !!python/unicode ''student_09''}
+
+    - {group: !!python/unicode ''student'', passwd: !!python/unicode ''n0R1!yWD95hWX'',
+    user: !!python/unicode ''student_10''}
+
+    ', program: !!python/unicode 'account_installer'}
+- {once_script: !!python/unicode '
+
+    #!/bin/bash
+
+    SCRIPT=`readlink -f "$0"`
+
+    SCRIPTPATH=`dirname "$SCRIPT"`
+
+    FILENAME=`basename "$SCRIPT"`
+
+    FILENAME="${FILENAME%.*}"
+
+
+    source $SCRIPTPATH/${FILENAME}_parameter
+
+
+    echo $network_domain
+
+    yum install ypserv -y
+
+    echo "NISDOMAIN=VCS" >> /etc/sysconfig/network
+
+    echo ''#Host                     : Domain  : Map              : Security'' >>
+    /etc/ypserv.conf
+
+    echo ''127.0.0.0/255.0.0.0       : *       : *                : None'' >> /etc/ypserv.conf
+
+    echo "$network_domain   : *       : *                : none" >> /etc/ypserv.conf
+
+    echo ''*                         : *       : *                : deny'' >> /etc/ypserv.conf
+
+    service ypserv start
+
+    echo ''^D Y'' | /usr/lib64/yp/ypinit -m
+
+    chkconfig --level 35 ypserv on
+
+    chkconfig --level 35 yppasswdd on
+
+    service ypserv restart
+
+    service yppasswdd start
+
+
+    echo ''StrictModes no'' >> /etc/ssh/sshd_config
+
+    /etc/init.d/sshd restart
+
+    ', parameter: !!python/unicode 'network_domain=192.168.1.0/24', program: !!python/unicode 'nis'}
+- {once_script: !!python/unicode '
+
+    #!/bin/bash
+
+
+    SCRIPT=`readlink -f "$0"`
+
+    SCRIPTPATH=`dirname "$SCRIPT"`
+
+    FILENAME=`basename "$SCRIPT"`
+
+    FILENAME="${FILENAME%.*}"
+
+
+    source $SCRIPTPATH/${FILENAME}_parameter
+
+
+    echo $network_domain
+
+    echo $mount_path
+
+
+    echo ''''  > /etc/sysconfig/iptables
+
+    echo ''*filter'' >> /etc/sysconfig/iptables
+
+    echo '':INPUT ACCEPT [0:0]'' >> /etc/sysconfig/iptables
+
+    echo '':FORWARD ACCEPT [0:0]'' >> /etc/sysconfig/iptables
+
+    echo '':OUTPUT ACCEPT [0:0]'' >> /etc/sysconfig/iptables
+
+    echo ''-A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT'' >> /etc/sysconfig/iptables
+
+    echo ''-A INPUT -p icmp -j ACCEPT'' >> /etc/sysconfig/iptables
+
+    echo ''-A INPUT -i lo -j ACCEPT'' >> /etc/sysconfig/iptables
+
+    echo ''-A INPUT -m state --state NEW -m tcp -p tcp --dport 22 -j ACCEPT'' >> /etc/sysconfig/ip
+
+    echo ''-A INPUT -m state --state NEW -m tcp -p tcp --dport 111 -j ACCEPT'' >>
+    /etc/sysconfig/i
+
+    echo ''-A INPUT -m state --state NEW -m tcp -p tcp --dport 2049 -j ACCEPT''  >>
+    /etc/sysconfig
+
+    echo ''-A INPUT -m state --state NEW -m tcp -p tcp --dport 50001:50004 -j ACCEPT''
+    >> /etc/sys
+
+    echo ''-A INPUT -m state --state NEW -m udp -p udp --dport 111 -j ACCEPT''  >>
+    /etc/sysconfig/
+
+    echo ''-A INPUT -m state --state NEW -m udp -p udp --dport 2049 -j ACCEPT''  >>
+    /etc/sysconfig
+
+    echo ''-A INPUT -m state --state NEW -m udp -p udp --dport 50001:50004 -j ACCEPT''  >>
+    /etc/sy
+
+    echo ''-A INPUT -j REJECT --reject-with icmp-host-prohibited''
+
+    echo ''-A FORWARD -j REJECT --reject-with icmp-host-prohibited''
+
+    echo ''COMMIT''  >> /etc/sysconfig/iptables
+
+    service iptables restart
+
+    yum install rpcbind nfs-utils nfs-utils-lib -y
+
+    echo "${mount_path[0]} $network_domain(rw,no_root_squash,async)" >> /etc/exports
+
+    echo "${mount_path[1]} $network_domain(rw,no_root_squash,async)" >> /etc/exports
+
+    chkconfig --level 3 netfs off
+
+    chkconfig --level 35 nfs on
+
+    service netfs stop
+
+    service nfs start
+
+    ', parameter: !!python/unicode 'mount_path=(/opt /home)
+
+    network_domain=192.168.1.0/24', program: !!python/unicode 'nfs'}
+- {once_script: !!python/unicode '
+
+    #!/bin/bash
+
+
+    yum install openmpi -y
+
+    ', parameter: !!python/unicode '', program: !!python/unicode 'openmpi'}
+- {once_script: !!python/unicode '#
+
+    #!/bin/bash
+
+
+    SCRIPT=`readlink -f "$0"`
+
+    SCRIPTPATH=`dirname "$SCRIPT"`
+
+    FILENAME=`basename "$SCRIPT"`
+
+    FILENAME="${FILENAME%.*}"
+
+
+    source $SCRIPTPATH/${FILENAME}_parameter
+
+    base_dir=/etc/sscloud/default_script
+
+    wget http://140.114.91.71:8080/ip_mapper_client.py -O $base_dir/ip_mapper_client.py
+
+    yum install python-setuptools -y
+
+    easy_install PyYAML
+
+    easy_install pika==0.9.8
+
+
+    python $base_dir/ip_mapper_client.py $ip_mapper_server_address $ip_mapper_server_port
+    $virtual_cluster_uuid $vmset_uuid $is_master >> /root/rabbitmq.log &
+
+
+    echo "python $base_dir/ip_mapper_client.py $ip_mapper_server_address $ip_mapper_server_port
+    $virtual_cluster_uuid $vmset_uuid $is_master >> /root/rabbitmq.log & " >> /etc/rc.local
+
+    ', parameter: !!python/unicode 'virtual_cluster_uuid=b618fce5-2d7d-41bc-b8e0-3e991ba4fdc2
+
+    vmset_uuid=4c4cb553-f1c5-4507-88d5-ffe3cc03caa2
+
+    ip_mapper_server_address=140.114.91.35
+
+    ip_mapper_server_port=5672
+
+    is_master=1', program: !!python/unicode 'hostname_mapper'}
+

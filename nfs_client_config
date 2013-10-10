@@ -1,0 +1,2 @@
+master_name=Server
+mount_path=(/home /opt)

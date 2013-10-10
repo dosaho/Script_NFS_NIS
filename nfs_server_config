@@ -1,0 +1,2 @@
+network_domain=192.168.145.0/24
+mount_path=(/home /opt)
